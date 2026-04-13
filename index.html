@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grupo EXP — Hub 360º</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --deep: #15001F;
+    --purple: #411556;
+    --white: #FFFFFF;
+    --white-60: rgba(255,255,255,0.6);
+    --white-20: rgba(255,255,255,0.2);
+    --white-10: rgba(255,255,255,0.1);
+    --white-05: rgba(255,255,255,0.05);
+    --transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--deep);
+    font-family: 'Instrument Sans', sans-serif;
+    color: var(--white);
+    cursor: default;
+  }
+
+  /* ─── HERO CONTAINER ─── */
+  .hero {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ─── ANIMATED GRADIENT BACKGROUND ─── */
+  .hero__bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(135deg, var(--purple) 0%, var(--deep) 50%, #1a0028 100%);
+    background-size: 400% 400%;
+    animation: gradientShift 12s ease infinite;
+  }
+  @keyframes gradientShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .hero__orb { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.35; pointer-events: none; transition: all 2s ease; }
+  .hero__orb--1 { width: 600px; height: 600px; background: radial-gradient(circle, #6b2d8b 0%, transparent 70%); top: -10%; left: -5%; animation: orbFloat1 18s ease-in-out infinite; }
+  .hero__orb--2 { width: 500px; height: 500px; background: radial-gradient(circle, #411556 0%, transparent 70%); bottom: -15%; right: -5%; animation: orbFloat2 22s ease-in-out infinite; }
+  .hero__orb--3 { width: 350px; height: 350px; background: radial-gradient(circle, #5a1f7a 0%, transparent 70%); top: 40%; left: 50%; animation: orbFloat3 15s ease-in-out infinite; }
+  @keyframes orbFloat1 { 0%, 100% { transform: translate(0,0) scale(1); } 33% { transform: translate(80px,60px) scale(1.1); } 66% { transform: translate(-40px,100px) scale(0.95); } }
+  @keyframes orbFloat2 { 0%, 100% { transform: translate(0,0) scale(1); } 33% { transform: translate(-70px,-50px) scale(1.15); } 66% { transform: translate(50px,-80px) scale(0.9); } }
+  @keyframes orbFloat3 { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-100px,-60px) scale(1.2); } }
+
+  .hero__noise { position: absolute; inset: 0; z-index: 1; opacity: 0.03; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 256px; pointer-events: none; }
+  .hero__grid { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0.04; background-image: linear-gradient(var(--white-10) 1px, transparent 1px), linear-gradient(90deg, var(--white-10) 1px, transparent 1px); background-size: 80px 80px; mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%); }
+
+  .particles { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+  .particle { position: absolute; width: 2px; height: 2px; background: var(--white); border-radius: 50%; opacity: 0; animation: particleFloat linear infinite; }
+  @keyframes particleFloat { 0% { opacity: 0; transform: translateY(100vh) scale(0); } 10% { opacity: 0.6; } 90% { opacity: 0.6; } 100% { opacity: 0; transform: translateY(-10vh) scale(1); } }
+
+  /* ─── SLIDES ─── */
+  .slide {
+    position: absolute; inset: 0; z-index: 2;
+    display: flex; align-items: center; justify-content: center;
+    padding: 60px 100px;
+    opacity: 0; pointer-events: none;
+    transition: opacity var(--transition), transform var(--transition);
+    transform: scale(0.97) translateY(15px);
+  }
+  .slide.active { opacity: 1; pointer-events: auto; transform: scale(1) translateY(0); }
+
+  /* ─── SIDE NAVIGATION ─── */
+  .nav { position: fixed; right: 40px; top: 50%; transform: translateY(-50%); z-index: 100; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+  .nav__item { display: flex; align-items: center; gap: 14px; cursor: pointer; padding: 4px 0; flex-direction: row-reverse; }
+  .nav__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--white-20); transition: all 0.5s cubic-bezier(0.16,1,0.3,1); flex-shrink: 0; position: relative; }
+  .nav__dot::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 1px solid transparent; transition: border-color 0.4s ease; }
+  .nav__label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: var(--white-20); opacity: 0; transform: translateX(10px); transition: all 0.4s cubic-bezier(0.16,1,0.3,1); white-space: nowrap; }
+  .nav__item:hover .nav__label, .nav__item.active .nav__label { opacity: 1; transform: translateX(0); color: var(--white-60); }
+  .nav__item:hover .nav__dot, .nav__item.active .nav__dot { background: var(--white); transform: scale(1.3); box-shadow: 0 0 20px rgba(255,255,255,0.3); }
+  .nav__item.active .nav__dot::after { border-color: var(--white-20); }
+
+  /* ─── TOP BAR ─── */
+  .topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 28px 48px; pointer-events: none; }
+  .topbar__logo { height: 32px; opacity: 0.9; filter: brightness(0) invert(1); transition: opacity 0.4s ease; }
+  .topbar__module { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 4px; color: var(--white-60); transition: all var(--transition); }
+
+  /* ─── BOTTOM BAR ─── */
+  .bottombar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 28px 48px; pointer-events: none; }
+  .bottombar__counter { font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: 3px; color: var(--white-20); }
+  .bottombar__progress { width: 120px; height: 2px; background: var(--white-10); border-radius: 1px; overflow: hidden; }
+  .bottombar__fill { height: 100%; background: var(--white); border-radius: 1px; transition: width var(--transition); }
+
+  /* ─── SLIDE TYPOGRAPHY ─── */
+  .slide__title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(42px, 5.5vw, 88px); line-height: 0.95; letter-spacing: -1px; margin-bottom: 20px; }
+  .slide__subtitle { font-family: 'Bebas Neue', sans-serif; font-size: clamp(20px, 2.5vw, 36px); letter-spacing: 6px; color: var(--white-60); margin-bottom: 16px; }
+  .slide__text { font-size: clamp(13px, 1.1vw, 17px); line-height: 1.7; color: var(--white-60); max-width: 600px; font-weight: 400; }
+  .slide__tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--white-60); border: 1px solid var(--white-20); padding: 6px 16px; border-radius: 20px; margin-bottom: 16px; }
+  .deco-line { width: 60px; height: 2px; background: linear-gradient(90deg, var(--white), transparent); border-radius: 1px; }
+
+  /* ─── CAPA ─── */
+  .slide--capa { flex-direction: column; gap: 32px; }
+  .slide--capa .capa__logo { width: clamp(420px, 52vw, 780px); filter: brightness(0) invert(1); animation: logoBreath 6s ease-in-out infinite; }
+  @keyframes logoBreath { 0%, 100% { opacity: 0.95; filter: brightness(0) invert(1) drop-shadow(0 0 40px rgba(255,255,255,0.08)); } 50% { opacity: 1; filter: brightness(0) invert(1) drop-shadow(0 0 80px rgba(255,255,255,0.15)); } }
+  .capa__tagline { font-family: 'Instrument Sans', sans-serif; font-size: clamp(12px, 1.1vw, 16px); letter-spacing: 8px; text-transform: uppercase; color: var(--white-60); text-align: center; }
+  .capa__line { width: 60px; height: 1px; background: linear-gradient(90deg, transparent, var(--white-60), transparent); }
+
+  /* ─── INTRO ─── */
+  .slide--intro { flex-direction: column; text-align: center; gap: 8px; }
+  .slide--intro .slide__text { max-width: 720px; text-align: center; }
+  .intro__highlight { font-family: 'Bebas Neue', sans-serif; font-size: clamp(24px, 3vw, 44px); letter-spacing: 2px; margin-top: 24px; background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.5) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  /* ─── ECOSSISTEMA — SOLAR SYSTEM ─── */
+  .slide--eco { flex-direction: column; gap: 0; align-items: center; justify-content: center; overflow: hidden; }
+  .solar { position: relative; width: 100%; height: 100%; min-height: 700px; }
+  .solar__sun {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 150px; height: 150px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(65,21,86,0.6) 0%, rgba(21,0,31,0.9) 70%);
+    border: 2px solid var(--white-20);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10; cursor: default;
+    box-shadow: 0 0 60px rgba(65,21,86,0.5), 0 0 120px rgba(65,21,86,0.2);
+    animation: sunPulse 4s ease-in-out infinite;
+  }
+  .solar__sun img { width: 95px; filter: brightness(0) invert(1); }
+  @keyframes sunPulse {
+    0%, 100% { box-shadow: 0 0 60px rgba(65,21,86,0.5), 0 0 120px rgba(65,21,86,0.2); }
+    50% { box-shadow: 0 0 80px rgba(65,21,86,0.7), 0 0 160px rgba(65,21,86,0.35); }
+  }
+  .solar__orbit {
+    position: absolute; top: 50%; left: 50%;
+    border: 1px solid var(--white-10); border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation-timing-function: linear; animation-iteration-count: infinite;
+  }
+  .solar__orbit--1 { width: 480px; height: 480px; animation: orbitSpin1 40s linear infinite; }
+  .solar__orbit--2 { width: 1050px; height: 1050px; animation: orbitSpin2 55s linear infinite reverse; border-style: dashed; border-color: rgba(255,255,255,0.06); }
+  @keyframes orbitSpin1 { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+  @keyframes orbitSpin2 { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+  .solar__planet {
+    position: absolute;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    cursor: default; z-index: 5;
+    transition: transform 0.5s cubic-bezier(0.16,1,0.3,1);
+  }
+  .solar__planet:hover { transform: scale(1.15); z-index: 20; }
+  .solar__planet-ring {
+    border-radius: 50%;
+    background: rgba(65,21,86,0.4); border: 1.5px solid var(--white-20);
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    transition: all 0.5s cubic-bezier(0.16,1,0.3,1);
+  }
+  .solar__planet[data-orbit="1"] .solar__planet-ring { width: 250px; height: 250px; }
+  .solar__planet[data-orbit="2"] .solar__planet-ring { width: 450px; height: 450px; }
+  .solar__planet:hover .solar__planet-ring {
+    border-color: var(--white); background: rgba(65,21,86,0.7);
+    box-shadow: 0 0 30px rgba(65,21,86,0.6), 0 12px 40px rgba(0,0,0,0.5);
+  }
+  .solar__planet[data-orbit="1"] .solar__planet-ring img { height: 110px; width: auto; }
+  .solar__planet[data-orbit="2"] .solar__planet-ring img { height: 200px; width: auto; }
+  .solar__planet-label {
+    font-size: 13px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--white-30); white-space: nowrap;
+    transition: color 0.4s ease; margin-top: 4px;
+  }
+  .solar__planet:hover .solar__planet-label { color: var(--white-60); }
+  .solar__planet-sub {
+    font-size: 8px; color: var(--white-20); letter-spacing: 1px;
+    opacity: 0; transform: translateY(-4px);
+    transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+  }
+  .solar__planet:hover .solar__planet-sub { opacity: 1; transform: translateY(0); }
+  .solar__connector {
+    position: absolute; top: 50%; left: 50%;
+    width: 1px; height: 50%;
+    background: linear-gradient(180deg, var(--white-10) 0%, transparent 100%);
+    transform-origin: top center; z-index: 1; pointer-events: none;
+  }
+  .solar__planet { cursor: pointer; }
+  .solar__info-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); z-index: 90;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+  }
+  .solar__info-overlay.active { opacity: 1; pointer-events: auto; cursor: pointer; }
+  .solar__info {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.85);
+    width: 380px; padding: 32px;
+    background: rgba(21,0,31,0.95); border: 1px solid var(--white-20);
+    border-radius: 20px; backdrop-filter: blur(24px);
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 60px rgba(65,21,86,0.3);
+    z-index: 100; opacity: 0; pointer-events: none;
+    transition: opacity 0.4s cubic-bezier(0.16,1,0.3,1), transform 0.4s cubic-bezier(0.16,1,0.3,1);
+  }
+  .solar__info.active { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+  .solar__info-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  .solar__info-logo { height: 48px; width: auto; filter: brightness(0) invert(1); }
+  .solar__info-title {
+    font-family: var(--font-display); font-size: 18px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 2px; color: var(--white);
+  }
+  .solar__info-close {
+    margin-left: auto; background: rgba(255,255,255,0.08); border: 1px solid var(--white-20);
+    color: var(--white-60); font-size: 22px; width: 40px; height: 40px;
+    border-radius: 50%; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; transition: all 0.3s ease;
+  }
+  .solar__info-close:hover { background: rgba(255,60,60,0.25); border-color: rgba(255,60,60,0.5); color: #ff6b6b; transform: rotate(90deg); }
+  .solar__info-text {
+    font-size: 14px; line-height: 1.8; color: var(--white-60); letter-spacing: 0.3px;
+  }
+  .solar__info-hint {
+    margin-top: 16px; font-size: 10px; color: var(--white-20); letter-spacing: 1px;
+    text-align: center; text-transform: uppercase;
+  }
+
+  /* ─── EXP PRODUÇÕES: COVER ─── */
+  .slide--prod-cover { flex-direction: column; gap: 24px; }
+  .prod-cover__logo { height: clamp(100px, 12vh, 160px); width: auto; }
+  .prod-cover__tagline { font-family: 'Instrument Sans', sans-serif; font-size: clamp(14px, 1.3vw, 20px); color: var(--white-60); text-align: center; max-width: 500px; letter-spacing: 1px; }
+
+  /* ─── EXP PRODUÇÕES: BENTO DATA VIZ ─── */
+  .slide--dataviz { flex-direction: column; gap: 0; padding: 70px 6% 60px 6%; position: relative; }
+  .bento__bgtitle {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -55%);
+    font-family: 'Bebas Neue', sans-serif; font-size: clamp(80px, 14vw, 200px);
+    letter-spacing: 8px; color: var(--white); opacity: 0.04;
+    white-space: nowrap; pointer-events: none; z-index: 0;
+  }
+  .bento__header { display: flex; align-items: baseline; gap: 20px; margin-bottom: 18px; z-index: 1; }
+  .bento__header-num { font-family: 'Bebas Neue', sans-serif; font-size: clamp(40px, 5vw, 72px); line-height: 0.9; }
+  .bento__header-label { font-size: 13px; text-transform: uppercase; letter-spacing: 3px; color: var(--white-60); }
+  .bento {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(3, auto);
+    gap: 10px;
+    width: 100%; max-width: 1100px; z-index: 1;
+  }
+  .bento__card {
+    background: rgba(255,255,255,0.95); color: var(--deep);
+    border-radius: 14px; padding: 16px 18px;
+    display: flex; flex-direction: column; justify-content: center;
+    transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+    cursor: default; overflow: hidden; position: relative;
+    min-height: 90px;
+  }
+  .bento__card:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 16px 50px rgba(0,0,0,0.35); }
+  .bento__card--span2 { grid-column: span 2; }
+  .bento__card--tall { grid-row: span 2; }
+  .bento__card--accent { background: linear-gradient(135deg, var(--purple), #2a0a3a); color: #fff; }
+  .bento__card--accent .bento__num { color: #fff; }
+  .bento__card--accent .bento__label { color: rgba(255,255,255,0.7); }
+  .bento__num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(32px, 4vw, 56px);
+    line-height: 0.9; color: var(--deep);
+    margin-bottom: 2px;
+  }
+  .bento__num--xl { font-size: clamp(48px, 6vw, 80px); }
+  .bento__label {
+    font-size: clamp(9px, 0.8vw, 12px);
+    text-transform: uppercase; letter-spacing: 1.5px;
+    color: rgba(21,0,31,0.55); line-height: 1.3; font-weight: 600;
+  }
+  .bento__pre { font-size: clamp(10px, 0.9vw, 13px); text-transform: uppercase; letter-spacing: 1px; color: rgba(21,0,31,0.4); font-weight: 600; margin-bottom: -2px; }
+
+  /* ─── EXP PRODUÇÕES: SERVICES TABS ─── */
+  .slide--svc { flex-direction: column; gap: 0; padding: 80px 6% 60px 6%; }
+  .svc__tabs { display: flex; gap: 0; width: 100%; border-bottom: 1px solid var(--white-10); margin-bottom: 0; flex-shrink: 0; }
+  .svc__tab {
+    flex: 1; padding: 14px 12px; text-align: center;
+    font-family: 'Bebas Neue', sans-serif; font-size: clamp(12px, 1.2vw, 17px); letter-spacing: 2px;
+    color: var(--white-20); cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.4s ease;
+    white-space: nowrap;
+  }
+  .svc__tab:hover, .svc__tab.active { color: var(--white); border-bottom-color: var(--white); }
+  .svc__panels { flex: 1; position: relative; width: 100%; min-height: 0; }
+  .svc__panel {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; gap: 60px;
+    padding: 40px 4%;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    transform: translateY(10px);
+  }
+  .svc__panel.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
+  .svc__content { flex: 1; display: flex; flex-direction: column; gap: 14px; }
+  .svc__content h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(32px, 4vw, 60px); line-height: 0.95; }
+  .svc__content p { font-size: clamp(13px, 1.1vw, 16px); line-height: 1.7; color: var(--white-60); max-width: 520px; }
+  .svc__highlight { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--white); background: var(--white-10); border: 1px solid var(--white-20); padding: 8px 16px; border-radius: 8px; margin-top: 4px; }
+
+  /* ─── PHOTO BASE (cinematic treatment) ─── */
+  .photo {
+    position: relative; background-size: cover; background-position: center;
+    border-radius: 14px; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+    filter: grayscale(0.35) contrast(1.05) brightness(0.85);
+    transition: filter 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1), box-shadow 0.9s ease;
+  }
+  .photo::before {
+    content: ''; position: absolute; inset: 0; z-index: 2;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 128px; opacity: 0.08; mix-blend-mode: overlay; pointer-events: none;
+  }
+  .photo::after {
+    content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.45) 100%),
+                linear-gradient(180deg, transparent 50%, rgba(21,0,31,0.5) 100%);
+  }
+  .photo:hover { filter: grayscale(0) contrast(1.1) brightness(1); box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 4px 16px rgba(65,21,86,0.4); }
+  .photo__caption {
+    position: absolute; left: 16px; bottom: 14px; z-index: 3;
+    font-size: 9px; text-transform: uppercase; letter-spacing: 3px;
+    color: #fff; font-weight: 600;
+    opacity: 0; transform: translateY(8px);
+    transition: all 0.5s cubic-bezier(0.16,1,0.3,1);
+    text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+  }
+  .photo:hover .photo__caption { opacity: 1; transform: translateY(0); }
+
+  /* Cinema panel for services */
+  .svc__cinema {
+    flex: 1.1; position: relative; height: 100%; max-height: 420px; min-width: 0;
+    border-radius: 18px; overflow: hidden;
+    box-shadow: 0 20px 70px rgba(0,0,0,0.5);
+  }
+  .svc__frame {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    opacity: 0; transition: opacity 1.2s ease;
+    animation: svcKenBurns 18s ease-in-out infinite;
+  }
+  .svc__frame.active { opacity: 1; }
+  .svc__frame:nth-child(2) { animation-delay: -6s; }
+  .svc__frame:nth-child(3) { animation-delay: -12s; }
+  @keyframes svcKenBurns {
+    0%, 100% { transform: scale(1); } 50% { transform: scale(1.1) translate(-1%, 1%); }
+  }
+  .svc__cinema-overlay {
+    position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.4) 100%);
+  }
+  .svc__cinema-overlay::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 128px; opacity: 0.06; mix-blend-mode: overlay;
+  }
+  .svc__cinema-dots {
+    position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 6px; z-index: 3;
+  }
+  .svc__cinema-dot {
+    width: 24px; height: 3px; border-radius: 2px;
+    background: rgba(255,255,255,0.25); cursor: pointer;
+    transition: all 0.4s ease;
+  }
+  .svc__cinema-dot.active { background: #fff; width: 36px; }
+  .svc__cinema-label {
+    position: absolute; top: 16px; right: 18px; z-index: 3;
+    font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+    color: rgba(255,255,255,0.5); font-weight: 600;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+  }
+
+  /* ─── PROD STATS (reusable) ─── */
+  .prod__stats { display: flex; gap: 48px; margin-top: 12px; }
+  .prod__stat { text-align: left; }
+  .prod__stat strong { font-family: 'Bebas Neue', sans-serif; font-size: clamp(36px, 4vw, 64px); display: block; line-height: 1; background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.4) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .prod__stat span { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--white-60); }
+
+  /* ─── CASE CIA ─── */
+  .slide--case { flex-direction: row; gap: 80px; padding: 60px 12%; }
+  .case__left { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 20px; }
+  .case__right { flex: 1; display: flex; flex-direction: column; gap: 16px; justify-content: center; }
+  .case__metric { display: flex; align-items: baseline; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--white-10); }
+  .case__metric strong { font-family: 'Bebas Neue', sans-serif; font-size: clamp(28px, 3vw, 48px); line-height: 1; white-space: nowrap; }
+  .case__metric span { font-size: 13px; color: var(--white-60); line-height: 1.4; }
+
+  /* ─── CIA FESTIVO — CINEMATIC MARQUEE ─── */
+  .slide--festivo { flex-direction: column; gap: 0; padding: 80px 0 50px 0; overflow: hidden; }
+  .fest__top { padding: 0 5%; display: flex; align-items: flex-start; gap: 40px; width: 100%; margin-bottom: 18px; }
+  .fest__info { flex: 0 0 320px; display: flex; flex-direction: column; gap: 12px; }
+  .fest__marquee { display: flex; flex-direction: column; gap: 12px; width: 100%; overflow: hidden; mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%); }
+  .fest__row { display: flex; gap: 14px; animation: festMarquee 60s linear infinite; width: max-content; }
+  .fest__row--reverse { animation: festMarqueeReverse 55s linear infinite; }
+  .fest__row:hover, .fest__row--reverse:hover { animation-play-state: paused; }
+  .fest__tile {
+    flex-shrink: 0;
+    width: clamp(200px, 20vw, 320px);
+    height: clamp(120px, 14vh, 190px);
+    transform: rotate(-1.5deg);
+    transition: transform 0.6s cubic-bezier(0.16,1,0.3,1), filter 0.6s ease;
+  }
+  .fest__row--reverse .fest__tile { transform: rotate(1.5deg); }
+  .fest__tile:hover { transform: rotate(0) scale(1.08) !important; z-index: 5; }
+  @keyframes festMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes festMarqueeReverse { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+  .fest__artists { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .fest__artist {
+    font-size: 11px; font-weight: 600; letter-spacing: 1px;
+    padding: 5px 12px; border-radius: 20px;
+    background: var(--white-05); border: 1px solid var(--white-10);
+    color: var(--white-60); transition: all 0.3s ease; cursor: default;
+  }
+  .fest__artist:hover { background: var(--white-10); color: var(--white); }
+  .fest__highlight {
+    display: inline-block; padding: 10px 18px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--purple), #2a0a3a);
+    font-family: 'Bebas Neue', sans-serif; font-size: clamp(13px, 1.2vw, 17px);
+    letter-spacing: 2px; line-height: 1.4; text-align: center;
+  }
+
+  /* ─── CIA ESPORTIVO — PARALLAX DIORAMA ─── */
+  .slide--esportivo { flex-direction: row; gap: 40px; padding: 75px 6% 55px 6%; }
+  .esp__left { flex: 1; display: flex; flex-direction: column; gap: 10px; justify-content: center; }
+  .esp__right { flex: 1; perspective: 1000px; display: flex; align-items: center; justify-content: center; }
+  .esp__diorama {
+    position: relative; width: 100%; height: 80%; min-height: 340px;
+    transform-style: preserve-3d;
+    transition: transform 0.15s ease-out;
+  }
+  .esp__plate {
+    position: absolute; border-radius: 14px;
+    transition: transform 0.8s cubic-bezier(0.16,1,0.3,1);
+  }
+  .esp__plate--main {
+    width: 70%; height: 65%; top: 2%; left: 15%;
+    transform: translateZ(50px);
+    z-index: 3;
+  }
+  .esp__plate--back-left {
+    width: 45%; height: 44%; bottom: 2%; left: -2%;
+    transform: translateZ(10px) rotate(-3deg);
+    z-index: 2;
+  }
+  .esp__plate--back-right {
+    width: 42%; height: 44%; top: 4%; right: -2%;
+    transform: translateZ(25px) rotate(2.5deg);
+    z-index: 2;
+  }
+  .esp__compare {
+    display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center;
+    background: var(--white-05); border: 1px solid var(--white-10); border-radius: 14px;
+    padding: 16px 20px; margin-top: 2px;
+  }
+  .esp__compare-side { text-align: center; }
+  .esp__compare-num { font-family: 'Bebas Neue', sans-serif; font-size: clamp(28px, 3vw, 44px); line-height: 1; }
+  .esp__compare-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--white-60); line-height: 1.3; margin-top: 4px; }
+  .esp__compare-vs { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 3px; color: var(--white-20); }
+  .esp__stats { display: flex; gap: 12px; flex-wrap: wrap; }
+  .esp__stat { background: var(--white-05); border: 1px solid var(--white-10); border-radius: 10px; padding: 12px 16px; flex: 1; min-width: 100px; transition: all 0.4s ease; }
+  .esp__stat:hover { background: var(--white-10); transform: translateY(-2px); }
+  .esp__stat strong { font-family: 'Bebas Neue', sans-serif; font-size: clamp(22px, 2.2vw, 32px); display: block; line-height: 1; }
+  .esp__stat span { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--white-60); }
+
+  /* ─── ESG ─── */
+  .slide--esg { flex-direction: column; gap: 28px; text-align: center; }
+  .esg__pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 900px; width: 100%; }
+  .esg__pillar { background: var(--white-05); border: 1px solid var(--white-10); border-radius: 16px; padding: 28px 20px; text-align: center; transition: all 0.5s ease; position: relative; overflow: hidden; }
+  .esg__pillar:hover { background: var(--white-10); transform: translateY(-5px); box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+  .esg__pillar h3 { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 3px; margin-bottom: 12px; }
+  .esg__pillar .esg__item { font-size: 13px; color: var(--white-60); line-height: 1.8; }
+  .esg__pillar .esg__item strong { color: var(--white); font-weight: 600; }
+  .esg__badge { font-size: 12px; color: var(--white-60); letter-spacing: 1px; max-width: 600px; line-height: 1.6; }
+
+  /* ─── CASE SHOWCASE — KEN BURNS FULLBLEED ─── */
+  .slide--showcase { flex-direction: row; gap: 0; padding: 0; align-items: stretch; justify-content: flex-start; }
+  .showcase__left {
+    flex: 0 0 42%; display: flex; flex-direction: column; gap: 10px; justify-content: center;
+    padding: 100px 4% 80px 6%; position: relative; z-index: 3;
+  }
+  .showcase__logo { height: clamp(80px, 10vh, 130px); width: auto; margin-bottom: 4px; }
+  .showcase__stage {
+    position: absolute; inset: 0; z-index: 0; overflow: hidden;
+  }
+  .showcase__frame {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    opacity: 0; transition: opacity 2s ease;
+  }
+  .showcase__frame.active { opacity: 1; animation: showcaseKenBurns 20s ease-in-out infinite; }
+  .showcase__frame:nth-child(2).active { animation-delay: -7s; }
+  .showcase__frame:nth-child(3).active { animation-delay: -14s; }
+  @keyframes showcaseKenBurns {
+    0%, 100% { transform: scale(1) translate(0,0); }
+    50% { transform: scale(1.15) translate(-2%, -1%); }
+  }
+  .showcase__vignette {
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background:
+      linear-gradient(90deg, var(--deep) 0%, rgba(21,0,31,0.85) 35%, rgba(21,0,31,0.3) 55%, transparent 75%),
+      linear-gradient(180deg, var(--deep) 0%, transparent 15%),
+      linear-gradient(0deg, var(--deep) 0%, transparent 15%);
+  }
+  .showcase__vignette::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 128px; opacity: 0.04; mix-blend-mode: overlay;
+  }
+  .showcase__thumbs {
+    position: absolute; bottom: 36px; right: 36px;
+    display: flex; gap: 8px; z-index: 3;
+  }
+  .showcase__thumb {
+    width: 48px; height: 3px; border-radius: 2px;
+    background: rgba(255,255,255,0.2); cursor: pointer;
+    transition: all 0.5s ease;
+  }
+  .showcase__thumb.active { background: #fff; width: 64px; }
+  .showcase__stats { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+  .showcase__stat { background: var(--white-05); border: 1px solid var(--white-10); border-radius: 10px; padding: 10px 14px; flex: 1; min-width: 90px; transition: all 0.4s ease; backdrop-filter: blur(8px); }
+  .showcase__stat:hover { background: var(--white-10); transform: translateY(-2px); }
+  .showcase__stat strong { font-family: 'Bebas Neue', sans-serif; font-size: clamp(20px, 2vw, 30px); display: block; line-height: 1; }
+  .showcase__stat span { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--white-60); }
+  .showcase__pills { display: flex; gap: 6px; flex-wrap: wrap; }
+  .showcase__pill {
+    font-size: 11px; font-weight: 600; letter-spacing: 1px;
+    padding: 6px 14px; border-radius: 20px;
+    background: rgba(255,255,255,0.08); border: 1px solid var(--white-10);
+    color: var(--white-60); transition: all 0.3s ease; cursor: default;
+    backdrop-filter: blur(8px);
+  }
+  .showcase__pill:hover { background: var(--white-10); color: var(--white); }
+
+  /* ─── CALDAS — AMBIENT HERO ─── */
+  .slide--caldas { flex-direction: column; gap: 24px; }
+  .caldas__bg {
+    position: absolute; inset: 0; z-index: -1;
+    background-size: cover; background-position: center;
+    filter: grayscale(0.5) brightness(0.3) contrast(1.1);
+    animation: caldasDrift 30s ease-in-out infinite;
+    transition: filter 2s ease;
+  }
+  .slide--caldas.active .caldas__bg { filter: grayscale(0.4) brightness(0.35) contrast(1.1); }
+  @keyframes caldasDrift { 0%, 100% { transform: scale(1.05); } 50% { transform: scale(1.12) translate(-1%, 0.5%); } }
+  .caldas__bg::after {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, rgba(21,0,31,0.3) 0%, rgba(21,0,31,0.75) 100%);
+  }
+  .caldas__logo { height: clamp(120px, 15vh, 210px); width: auto; margin-bottom: 8px; position: relative; z-index: 2; }
+  .caldas__sub { font-family: 'Instrument Sans', sans-serif; font-size: clamp(14px, 1.3vw, 20px); color: var(--white-60); text-align: center; letter-spacing: 2px; position: relative; z-index: 2; }
+  .caldas__loc { font-family: 'Bebas Neue', sans-serif; font-size: clamp(14px, 1.2vw, 18px); letter-spacing: 4px; color: var(--white-20); position: relative; z-index: 2; }
+
+  /* ─── AGÊNCIA NIX ─── */
+  .slide--nix { flex-direction: column; align-items: flex-start; gap: 20px; padding-left: 12%; padding-right: 12%; overflow: hidden; }
+  .nix__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 740px; }
+  .nix__card { background: var(--white-05); border: 1px solid var(--white-10); border-radius: 12px; padding: 24px 20px; transition: all 0.5s ease; }
+  .nix__card:hover { background: var(--white-10); transform: translateY(-3px); }
+  .nix__card h4 { font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 1px; margin-bottom: 4px; }
+  .nix__card p { font-size: 12px; color: var(--white-60); line-height: 1.5; }
+  .nix__brands-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--white-20); margin-top: 8px; }
+  .nix__brands { display: flex; gap: 50px; align-items: center; animation: nixMarquee 25s linear infinite; width: max-content; }
+  .nix__brands:hover { animation-play-state: paused; }
+  .nix__brand {
+    height: 36px; width: auto; flex-shrink: 0;
+    opacity: 0.35; filter: grayscale(1) brightness(2);
+    transition: all 0.5s cubic-bezier(0.16,1,0.3,1);
+  }
+  .nix__brand:hover { opacity: 0.9; filter: grayscale(0) brightness(1.5); transform: scale(1.15); }
+  @keyframes nixMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* ─── STAGE DIVE ─── */
+  .slide--stage { flex-direction: row; gap: 80px; padding: 60px 12%; }
+  .stage__left, .stage__right { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 20px; }
+  .stage__number { font-family: 'Bebas Neue', sans-serif; font-size: clamp(60px, 7vw, 120px); line-height: 1; background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.2) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  /* ─── EXP FORMATURAS ─── */
+  .slide--form { flex-direction: column; align-items: flex-start; gap: 24px; padding-left: 12%; }
+  .form__items { display: flex; gap: 16px; flex-wrap: wrap; max-width: 800px; }
+  .form__item { background: var(--white-05); border: 1px solid var(--white-10); border-radius: 12px; padding: 20px 24px; flex: 1; min-width: 170px; transition: all 0.5s ease; }
+  .form__item:hover { background: var(--white-10); transform: translateY(-3px); }
+  .form__item h4 { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 1px; margin-bottom: 6px; }
+  .form__item p { font-size: 12px; color: var(--white-60); line-height: 1.4; }
+
+  /* ─── WHY CHOOSE ─── */
+  .why__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 820px; margin-top: 8px; }
+  .why__card { background: var(--white-05); border: 1px solid var(--white-10); border-radius: 14px; padding: 28px 22px; text-align: center; transition: all 0.5s ease; }
+  .why__card:hover { background: var(--white-10); transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.25); }
+  .why__card h4 { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px; margin-bottom: 8px; }
+  .why__card p { font-size: 12px; color: var(--white-60); line-height: 1.5; }
+  .why__layout { display: flex; align-items: center; gap: 48px; width: 100%; max-width: 1100px; }
+  .why__left { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+  .why__right { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .brazil-map { width: 320px; height: auto; }
+  .brazil-map .state { fill: rgba(255,255,255,0.06); stroke: rgba(255,255,255,0.12); stroke-width: 0.5; transition: all 0.5s ease; }
+  .brazil-map .state.active { fill: rgba(65,21,86,0.7); stroke: rgba(255,255,255,0.5); stroke-width: 1; filter: drop-shadow(0 0 12px rgba(65,21,86,0.6)); }
+  .brazil-map .state.active:hover { fill: rgba(90,30,120,0.85); filter: drop-shadow(0 0 20px rgba(65,21,86,0.8)); }
+  .brazil-map .state-label { font-size: 5px; fill: rgba(255,255,255,0.5); text-anchor: middle; pointer-events: none; font-family: 'Instrument Sans', sans-serif; font-weight: 600; letter-spacing: 0.5px; }
+  .brazil-map .state.active .state-label, .brazil-map .state.active + text { fill: rgba(255,255,255,0.9); }
+  .map__legend { display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--white-40); letter-spacing: 1px; text-transform: uppercase; }
+  .map__legend-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(65,21,86,0.7); border: 1px solid rgba(255,255,255,0.4); }
+  .map__states-list { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 4px; }
+  .map__state-tag { background: rgba(65,21,86,0.4); border: 1px solid var(--white-20); border-radius: 6px; padding: 4px 10px; font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 2px; color: var(--white-60); }
+
+  /* ─── FECHAMENTO ─── */
+  .slide--end { flex-direction: column; gap: 28px; text-align: center; }
+  .end__cta { font-family: 'Bebas Neue', sans-serif; font-size: clamp(32px, 4.5vw, 72px); line-height: 1.05; max-width: 800px; background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .end__contact { display: flex; gap: 40px; margin-top: 12px; }
+  .end__contact a { color: var(--white-60); text-decoration: none; font-size: 13px; letter-spacing: 1px; border-bottom: 1px solid var(--white-20); padding-bottom: 4px; transition: all 0.3s ease; }
+  .end__contact a:hover { color: var(--white); border-color: var(--white); }
+
+  /* ─── STAGGER ANIMATION ─── */
+  .slide.active > * { animation: slideIn 0.8s cubic-bezier(0.16,1,0.3,1) backwards; }
+  .slide.active > *:nth-child(1) { animation-delay: 0.1s; }
+  .slide.active > *:nth-child(2) { animation-delay: 0.2s; }
+  .slide.active > *:nth-child(3) { animation-delay: 0.3s; }
+  .slide.active > *:nth-child(4) { animation-delay: 0.35s; }
+  .slide.active > *:nth-child(5) { animation-delay: 0.4s; }
+  .slide.active > *:nth-child(6) { animation-delay: 0.45s; }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(25px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ─── SCROLL HINT ─── */
+  .scroll-hint { position: fixed; bottom: 48px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: 0.4; animation: hintPulse 2.5s ease-in-out infinite; }
+  .scroll-hint span { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--white-60); }
+  .scroll-hint__arrow { width: 16px; height: 16px; border-right: 1.5px solid var(--white-60); border-bottom: 1.5px solid var(--white-60); transform: rotate(45deg); animation: arrowBounce 2.5s ease-in-out infinite; }
+  @keyframes hintPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.7; } }
+  @keyframes arrowBounce { 0%, 100% { transform: rotate(45deg) translateY(0); } 50% { transform: rotate(45deg) translateY(4px); } }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero__bg"></div>
+  <div class="hero__orb hero__orb--1"></div>
+  <div class="hero__orb hero__orb--2"></div>
+  <div class="hero__orb hero__orb--3"></div>
+  <div class="hero__noise"></div>
+  <div class="hero__grid"></div>
+  <div class="particles" id="particles"></div>
+
+  <!-- SLIDE 0: CAPA -->
+  <div class="slide slide--capa active" data-slide="0">
+    <img src="logo.svg" alt="Grupo EXP" class="capa__logo">
+    <div class="capa__line"></div>
+    <p class="capa__tagline">Hub 360&deg; de Experi&ecirc;ncias</p>
+  </div>
+
+  <!-- SLIDE 1: INTRODUÇÃO -->
+  <div class="slide slide--intro" data-slide="1">
+    <span class="slide__tag">M&oacute;dulo 01</span>
+    <h1 class="slide__title">Quem Somos</h1>
+    <p class="slide__text">O Grupo EXP nasceu da vontade de transformar a forma como as pessoas se conectam com marcas, eventos e momentos inesquec&iacute;veis. Somos um ecossistema completo de solu&ccedil;&otilde;es que une a for&ccedil;a bruta da log&iacute;stica, a intelig&ecirc;ncia criativa do marketing, a curadoria art&iacute;stica de ponta e a sensibilidade de realizar grandes sonhos.</p>
+    <p class="intro__highlight">N&atilde;o entregamos apenas servi&ccedil;os &mdash;<br>entregamos mudan&ccedil;a em movimento.</p>
+  </div>
+
+  <!-- SLIDE 2: ECOSSISTEMA — SOLAR SYSTEM -->
+  <div class="slide slide--eco" data-slide="2">
+    <span class="slide__tag" style="position:absolute;top:80px;left:50%;transform:translateX(-50%);">Ecossistema &mdash; Solu&ccedil;&atilde;o 360&deg;</span>
+    <div class="solar" id="solarSystem">
+      <!-- Orbits -->
+      <div class="solar__orbit solar__orbit--1"></div>
+      <div class="solar__orbit solar__orbit--2"></div>
+      <!-- Sun -->
+      <div class="solar__sun">
+        <img src="logo.svg" alt="Grupo EXP">
+      </div>
+      <!-- Planets — positioned via JS -->
+      <div class="solar__planet" data-orbit="1" data-angle="0" data-speed="40" data-info="Eventos universit&aacute;rios, festivais, corporativos, Shows, congressos, ativa&ccedil;&otilde;es de marca, log&iacute;stica t&eacute;cnica, entre outros">
+        <div class="solar__planet-ring"><img src="expproducoes.svg" alt="EXP Produ&ccedil;&otilde;es"></div>
+        <span class="solar__planet-label">EXP Produ&ccedil;&otilde;es</span>
+        <span class="solar__planet-sub">Execu&ccedil;&atilde;o de Elite</span>
+      </div>
+      <div class="solar__planet" data-orbit="1" data-angle="180" data-speed="40" data-info="Realiza&ccedil;&atilde;o de Sonhos, Bailes, aulas da saudade, cola&ccedil;&atilde;o, missa, entre outros.">
+        <div class="solar__planet-ring"><img src="expformaturas.svg" alt="EXP Formaturas"></div>
+        <span class="solar__planet-label">EXP Formaturas</span>
+        <span class="solar__planet-sub">Realiza&ccedil;&atilde;o de Sonhos</span>
+      </div>
+      <div class="solar__planet" data-orbit="2" data-angle="60" data-speed="55" data-info="Estrat&eacute;gia &amp; Digital, Branding, tr&aacute;fego pago, social media, posicionamento de mercado, entre outros">
+        <div class="solar__planet-ring"><img src="agencianix.svg" alt="Ag&ecirc;ncia Nix"></div>
+        <span class="solar__planet-label">Ag&ecirc;ncia Nix</span>
+        <span class="solar__planet-sub">Estrat&eacute;gia &amp; Digital</span>
+      </div>
+      <div class="solar__planet" data-orbit="2" data-angle="200" data-speed="55" data-info="Entretenimento &amp; Lifestyle, Gest&atilde;o de carreira, tours, bookings, curadoria, entre outros">
+        <div class="solar__planet-ring"><img src="stagedive.svg" alt="Stage Dive"></div>
+        <span class="solar__planet-label">Stage Dive</span>
+        <span class="solar__planet-sub">Entretenimento &amp; Lifestyle</span>
+      </div>
+      <!-- Info overlay + popup (shown on planet click) -->
+      <div class="solar__info-overlay" id="solarOverlay"></div>
+      <div class="solar__info" id="solarInfo">
+        <div class="solar__info-header">
+          <img class="solar__info-logo" src="" alt="">
+          <span class="solar__info-title"></span>
+          <button class="solar__info-close">&times;</button>
+        </div>
+        <p class="solar__info-text"></p>
+        <p class="solar__info-hint">Clique fora ou no &times; para fechar</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: EXP PRODUÇÕES — COVER -->
+  <div class="slide slide--prod-cover" data-slide="3">
+    <img src="expproducoes.svg" alt="EXP Produções" class="prod-cover__logo">
+    <div class="capa__line"></div>
+    <p class="prod-cover__tagline">Onde a complexidade encontra a execu&ccedil;&atilde;o de elite.</p>
+  </div>
+
+  <!-- SLIDE 4: EXP PRODUÇÕES — BIG NUMBERS BENTO -->
+  <div class="slide slide--dataviz" data-slide="4">
+    <div class="bento__bgtitle">BIG NUMBERS</div>
+    <div class="bento__header">
+      <span class="bento__header-num">+173</span>
+      <span class="bento__header-label">Projetos Executados</span>
+    </div>
+    <div class="bento">
+      <!-- Row 1 -->
+      <div class="bento__card bento__card--tall">
+        <span class="bento__pre">+ De</span>
+        <span class="bento__num bento__num--xl">80</span>
+        <span class="bento__label">Festa<br>Universit&aacute;ria</span>
+      </div>
+      <div class="bento__card bento__card--span2">
+        <span class="bento__num bento__num--xl">38</span>
+        <span class="bento__label">Jogos Universit&aacute;rios</span>
+      </div>
+      <div class="bento__card">
+        <span class="bento__num">15</span>
+        <span class="bento__label">Corporativo</span>
+      </div>
+      <div class="bento__card">
+        <span class="bento__num">9</span>
+        <span class="bento__label">Evento Cidade</span>
+      </div>
+      <!-- Row 2 -->
+      <div class="bento__card">
+        <span class="bento__num">7</span>
+        <span class="bento__label">Feira Agropecu&aacute;ria</span>
+      </div>
+      <div class="bento__card">
+        <span class="bento__num">6</span>
+        <span class="bento__label">Show</span>
+      </div>
+      <div class="bento__card">
+        <span class="bento__num">4</span>
+        <span class="bento__label">Bar Tempor&aacute;rio</span>
+      </div>
+      <div class="bento__card">
+        <span class="bento__num">3</span>
+        <span class="bento__label">Palestra</span>
+      </div>
+      <!-- Row 3 -->
+      <div class="bento__card">
+        <span class="bento__num">3</span>
+        <span class="bento__label">Exposi&ccedil;&atilde;o</span>
+      </div>
+      <div class="bento__card">
+        <span class="bento__num">2</span>
+        <span class="bento__label">Carnaval Univ.</span>
+      </div>
+      <div class="bento__card">
+        <span class="bento__num">2</span>
+        <span class="bento__label">Pol&iacute;tico</span>
+      </div>
+      <div class="bento__card bento__card--accent bento__card--span2">
+        <div style="display:flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+          <div><span class="bento__num">1</span><span class="bento__label">Baterias</span></div>
+          <div><span class="bento__num">1</span><span class="bento__label">Workshop</span></div>
+          <div><span class="bento__num">1</span><span class="bento__label">Jogos Online</span></div>
+          <div><span class="bento__num">1</span><span class="bento__label">Festival</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: EXP PRODUÇÕES — SERVIÇOS (TABS) -->
+  <div class="slide slide--svc" data-slide="5">
+    <div class="svc__tabs" id="svcTabs">
+      <div class="svc__tab active" data-panel="0">Eventos</div>
+      <div class="svc__tab" data-panel="1">Esportiva</div>
+      <div class="svc__tab" data-panel="2">Palco &amp; T&eacute;cnica</div>
+      <div class="svc__tab" data-panel="3">Bar &amp; A&amp;B</div>
+      <div class="svc__tab" data-panel="4">Ativa&ccedil;&otilde;es</div>
+    </div>
+    <div class="svc__panels" id="svcPanels">
+      <!-- Panel 0: Eventos -->
+      <div class="svc__panel active" data-panel="0">
+        <div class="svc__content">
+          <h2>Produ&ccedil;&atilde;o e Gest&atilde;o<br>Executiva 360&deg;</h2>
+          <p>Assumimos a responsabilidade total pela viabilidade do seu projeto. Do planejamento or&ccedil;ament&aacute;rio ao cronograma de montagem, nossa gest&atilde;o garante que cada pe&ccedil;a do quebra-cabe&ccedil;a esteja no lugar certo, no tempo certo.</p>
+          <div class="svc__highlight">Coordena&ccedil;&atilde;o de fornecedores, gest&atilde;o de riscos e entrega chave na m&atilde;o</div>
+        </div>
+        <div class="svc__cinema" data-cinema="evt">
+          <div class="svc__frame active" style="background-image:url('images/servicos/eventos/01.png')"></div>
+          <div class="svc__cinema-overlay"></div>
+          <span class="svc__cinema-label">01 / 01</span>
+          <div class="svc__cinema-dots">
+            <div class="svc__cinema-dot active" data-i="0"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Panel 1: Esportiva -->
+      <div class="svc__panel" data-panel="1">
+        <div class="svc__content">
+          <h2>Produ&ccedil;&atilde;o Esportiva<br>de Alta Performance</h2>
+          <p>Refer&ecirc;ncia nacional na gest&atilde;o de competi&ccedil;&otilde;es. J&aacute; operamos 47 pra&ccedil;as esportivas simultaneamente.</p>
+          <p>Arbitragem profissional, log&iacute;stica de atleta, infraestrutura de quadras e &aacute;reas de conviv&ecirc;ncia esportiva.</p>
+        </div>
+        <div class="svc__cinema" data-cinema="sport">
+          <div class="svc__frame active" style="background-image:url('images/servicos/esportiva/01.jpg')"></div>
+          <div class="svc__frame" style="background-image:url('images/servicos/esportiva/02.jpg')"></div>
+          <div class="svc__frame" style="background-image:url('images/servicos/esportiva/03.jpg')"></div>
+          <div class="svc__cinema-overlay"></div>
+          <span class="svc__cinema-label">01 / 03</span>
+          <div class="svc__cinema-dots">
+            <div class="svc__cinema-dot active" data-i="0"></div>
+            <div class="svc__cinema-dot" data-i="1"></div>
+            <div class="svc__cinema-dot" data-i="2"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Panel 2: Palco & Técnica -->
+      <div class="svc__panel" data-panel="2">
+        <div class="svc__content">
+          <h2>O Espet&aacute;culo sob<br>Controle Rigoroso</h2>
+          <p>Transformamos &aacute;reas vazias em palcos imponentes. Cuidamos de toda a estrutura t&eacute;cnica, sonoriza&ccedil;&atilde;o, ilumina&ccedil;&atilde;o e log&iacute;stica de riders, garantindo que o artista tenha a melhor entrega e o p&uacute;blico a melhor vis&atilde;o.</p>
+        </div>
+        <div class="svc__cinema" data-cinema="stage">
+          <div class="svc__frame active" style="background-image:url('images/servicos/palco/01.jpg')"></div>
+          <div class="svc__cinema-overlay"></div>
+          <span class="svc__cinema-label">01 / 01</span>
+          <div class="svc__cinema-dots">
+            <div class="svc__cinema-dot active" data-i="0"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Panel 3: Bar & A&B -->
+      <div class="svc__panel" data-panel="3">
+        <div class="svc__content">
+          <h2>Opera&ccedil;&atilde;o Log&iacute;stica<br>de Bares</h2>
+          <p>Operamos com fluxos inteligentes para reduzir filas e maximizar o consumo, garantindo bebida gelada e atendimento &aacute;gil do primeiro ao &uacute;ltimo minuto.</p>
+        </div>
+        <div class="svc__cinema" data-cinema="bar">
+          <div class="svc__frame active" style="background:rgba(65,21,86,0.3);display:flex;align-items:center;justify-content:center;"><span style="color:rgba(255,255,255,0.2);font-size:14px;letter-spacing:2px;text-transform:uppercase;">Fotos em breve</span></div>
+          <div class="svc__cinema-overlay"></div>
+        </div>
+      </div>
+      <!-- Panel 4: Ativações -->
+      <div class="svc__panel" data-panel="4">
+        <div class="svc__content">
+          <h2>Do Briefing &agrave;<br>Realidade:<br>Experi&ecirc;ncia de Marca</h2>
+          <p>Viabilizamos fisicamente o que a criatividade planeja. Constru&iacute;mos e operamos espa&ccedil;os interativos, estandes e cenografias que conectam marcas ao p&uacute;blico de forma org&acirc;nica e impactante.</p>
+        </div>
+        <div class="svc__cinema" data-cinema="activ">
+          <div class="svc__frame active" style="background-image:url('images/servicos/ativacoes/01.jpg')"></div>
+          <div class="svc__frame" style="background-image:url('images/servicos/ativacoes/02.jpg')"></div>
+          <div class="svc__frame" style="background-image:url('images/servicos/ativacoes/03.jpg')"></div>
+          <div class="svc__frame" style="background-image:url('images/servicos/ativacoes/04.jpg')"></div>
+          <div class="svc__frame" style="background-image:url('images/servicos/ativacoes/05.jpg')"></div>
+          <div class="svc__frame" style="background-image:url('images/servicos/ativacoes/06.jpg')"></div>
+          <div class="svc__frame" style="background-image:url('images/servicos/ativacoes/07.jpg')"></div>
+          <div class="svc__frame" style="background-image:url('images/servicos/ativacoes/08.jpeg')"></div>
+          <div class="svc__cinema-overlay"></div>
+          <span class="svc__cinema-label">01 / 08</span>
+          <div class="svc__cinema-dots">
+            <div class="svc__cinema-dot active" data-i="0"></div>
+            <div class="svc__cinema-dot" data-i="1"></div>
+            <div class="svc__cinema-dot" data-i="2"></div>
+            <div class="svc__cinema-dot" data-i="3"></div>
+            <div class="svc__cinema-dot" data-i="4"></div>
+            <div class="svc__cinema-dot" data-i="5"></div>
+            <div class="svc__cinema-dot" data-i="6"></div>
+            <div class="svc__cinema-dot" data-i="7"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: CASE CIA -->
+  <div class="slide slide--case" data-slide="6">
+    <div class="case__left">
+      <span class="slide__tag">Case</span>
+      <img src="cia.svg" alt="CIA" style="height: clamp(120px, 16vh, 220px); width: auto; margin-bottom: 8px;">
+      <p class="slide__text">A maior competi&ccedil;&atilde;o esportiva universit&aacute;ria do Brasil. O maior ecossistema jovem de experi&ecirc;ncia, esporte e entretenimento do pa&iacute;s.</p>
+      <div class="deco-line"></div>
+    </div>
+    <div class="case__right">
+      <div class="case__metric"><strong>30.000</strong><span>pessoas por dia de evento</span></div>
+      <div class="case__metric"><strong>+45</strong><span>cidades e 8 estados + DF participando</span></div>
+      <div class="case__metric"><strong>3</strong><span>festivais com palcos tem&aacute;ticos e atra&ccedil;&otilde;es nacionais</span></div>
+      <div class="case__metric"><strong>47</strong><span>pra&ccedil;as esportivas simult&acirc;neas</span></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: CIA FESTIVO -->
+  <div class="slide slide--festivo" data-slide="7">
+    <div class="fest__top">
+      <div class="fest__info">
+        <span class="slide__tag">CIA &mdash; Festivo</span>
+        <h1 class="slide__title" style="font-size: clamp(36px, 4.5vw, 68px);">Palcos<br>Tem&aacute;ticos</h1>
+        <p class="slide__text" style="max-width: 320px;">Atra&ccedil;&otilde;es nacionais que transformam a noite em mem&oacute;ria.</p>
+        <div class="fest__artists">
+          <span class="fest__artist">Nattan</span>
+          <span class="fest__artist">Felipe Amorim</span>
+          <span class="fest__artist">Jorge &amp; Matheus</span>
+          <span class="fest__artist">Dennis</span>
+          <span class="fest__artist">Turma do Pagode</span>
+          <span class="fest__artist">+ outros</span>
+        </div>
+        <div class="fest__highlight">3 festas noturnas + 3 arenas<br>6 eventos 100% OPEN BAR</div>
+      </div><!-- /fest__info -->
+    </div><!-- /fest__top -->
+    <div class="fest__marquee-wrap"><!-- placeholder: will expand via JS --></div>
+  </div>
+
+  <!-- SLIDE 8: CIA ESPORTIVO -->
+  <div class="slide slide--esportivo" data-slide="8">
+    <div class="esp__left">
+      <span class="slide__tag">CIA &mdash; Esportivo</span>
+      <h1 class="slide__title" style="font-size: clamp(28px, 3.5vw, 50px); margin-bottom: 8px;">O Maior Evento<br>Esportivo Universit&aacute;rio<br>do Pa&iacute;s</h1>
+      <p class="slide__text">Nossa complexidade log&iacute;stica supera eventos mundiais.</p>
+      <div class="esp__compare">
+        <div class="esp__compare-side">
+          <div class="esp__compare-num">47</div>
+          <div class="esp__compare-label">pra&ccedil;as em<br><strong>4 dias</strong></div>
+          <div class="esp__compare-label" style="margin-top:6px; color: var(--white);">CIA</div>
+        </div>
+        <div class="esp__compare-vs">VS</div>
+        <div class="esp__compare-side">
+          <div class="esp__compare-num" style="opacity: 0.4;">35</div>
+          <div class="esp__compare-label">pra&ccedil;as em<br><strong>17 dias</strong></div>
+          <div class="esp__compare-label" style="margin-top:6px; opacity:0.5;">Olimp&iacute;adas Paris</div>
+        </div>
+      </div>
+      <div class="esp__stats">
+        <div class="esp__stat"><strong>6.137</strong><span>Atletas</span></div>
+        <div class="esp__stat"><strong>90+</strong><span>Atl&eacute;ticas</span></div>
+        <div class="esp__stat"><strong>80%</strong><span>Envolvimento<br>do P&uacute;blico</span></div>
+      </div>
+    </div>
+    <div class="esp__right">
+      <div class="esp__diorama" id="espDiorama">
+        <div class="esp__plate esp__plate--main photo" style="background-image:url('images/esportivo/01.jpg')">
+          <span class="photo__caption">Panorama Esportivo</span>
+        </div>
+        <div class="esp__plate esp__plate--back-left photo" style="background-image:url('images/esportivo/02.jpg')">
+          <span class="photo__caption">Competi&ccedil;&atilde;o</span>
+        </div>
+        <div class="esp__plate esp__plate--back-right photo" style="background-image:url('images/esportivo/03.jpg')">
+          <span class="photo__caption">Premia&ccedil;&atilde;o</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: ESG -->
+  <div class="slide slide--esg" data-slide="9">
+    <span class="slide__tag">Vencedor Pr&ecirc;mio PRESE 2025 &mdash; 10&ordm; Congresso Brasileiro dos Promotores de Eventos</span>
+    <h1 class="slide__title">Refer&ecirc;ncia<br>Nacional em ESG</h1>
+    <div class="esg__pillars">
+      <div class="esg__pillar">
+        <h3>Social</h3>
+        <div class="esg__item"><strong>38 mil</strong> pe&ccedil;as de roupas doadas</div>
+        <div class="esg__item"><strong>19,9 ton</strong> de alimentos</div>
+        <div class="esg__item"><strong>12 mil</strong> itens de higiene</div>
+        <div class="esg__item"><strong>763</strong> doa&ccedil;&otilde;es de sangue</div>
+      </div>
+      <div class="esg__pillar">
+        <h3>Ambiental</h3>
+        <div class="esg__item"><strong>80%</strong> redu&ccedil;&atilde;o em copos pl&aacute;sticos</div>
+        <div class="esg__item"><strong>+1 milh&atilde;o</strong> de copos evitados</div>
+        <div class="esg__item"><strong>4 ton</strong> recicladas com a COOPERU</div>
+      </div>
+      <div class="esg__pillar">
+        <h3>Econ&ocirc;mico</h3>
+        <div class="esg__item">Impacto em <strong>47 cidades</strong></div>
+        <div class="esg__item"><strong>7 estados</strong> + DF</div>
+        <div class="esg__item">Benef&iacute;cios diretos a <strong>institui&ccedil;&otilde;es locais</strong></div>
+        <div class="esg__item">Reformas em <strong>pra&ccedil;as esportivas</strong> e <strong>escolas p&uacute;blicas</strong></div>
+      </div>
+    </div>
+    <p class="esg__badge">O maior impacto social e ambiental j&aacute; realizado por um evento universit&aacute;rio no Brasil.</p>
+  </div>
+
+  <!-- SLIDE 10: CASE UAI SUMMIT -->
+  <div class="slide slide--showcase" data-slide="10">
+    <div class="showcase__stage" id="showcaseStage">
+      <div class="showcase__frame active" style="background-image:url('images/uaisummit/01.jpg')"></div>
+      <div class="showcase__frame" style="background-image:url('images/uaisummit/02.jpg')"></div>
+      <div class="showcase__frame" style="background-image:url('images/uaisummit/03.jpg')"></div>
+      <div class="showcase__vignette"></div>
+      <div class="showcase__thumbs">
+        <div class="showcase__thumb active" data-i="0"></div>
+        <div class="showcase__thumb" data-i="1"></div>
+        <div class="showcase__thumb" data-i="2"></div>
+      </div>
+    </div>
+    <div class="showcase__left">
+      <span class="slide__tag">Case</span>
+      <img src="uaisummit.svg" alt="UAI Summit" class="showcase__logo">
+      <p class="slide__text" style="font-size: 13px; max-width: 420px;">Maior evento de desenvolvimento pessoal e empreendedorismo j&aacute; realizado no interior de Minas Gerais.</p>
+      <div class="deco-line" style="margin: 4px 0;"></div>
+      <p class="slide__text" style="font-size: 11px; max-width: 400px;">Cidades que receberam o Uai Summit em 2025: <strong style="color:#fff">Uberaba, Uberl&acirc;ndia e Arax&aacute;</strong></p>
+      <div class="showcase__stats">
+        <div class="showcase__stat"><strong>+12</strong><span>Palestras</span></div>
+        <div class="showcase__stat"><strong>+57</strong><span>Empresas &amp;<br>Institui&ccedil;&otilde;es</span></div>
+        <div class="showcase__stat"><strong>+1000</strong><span>Participantes<br>Inscritos</span></div>
+      </div>
+      <div class="showcase__pills">
+        <span class="showcase__pill">Uai Cult &mdash; Gastronomia &amp; Cultura</span>
+        <span class="showcase__pill">Uai Talks</span>
+        <span class="showcase__pill">Uai Startup Cup</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 11: CASE CALDAS COUNTRY -->
+  <div class="slide slide--caldas" data-slide="11">
+    <div class="caldas__bg" style="background-image:url('images/caldas/bg.jpg')"></div>
+    <img src="caldas.svg" alt="Caldas Country" class="caldas__logo">
+    <div class="capa__line" style="position:relative;z-index:2"></div>
+    <p class="caldas__sub">O Festival Mais Quente do Brasil</p>
+    <p class="caldas__loc">Caldas Novas &mdash; GO</p>
+  </div>
+
+  <!-- SLIDE 12: AGÊNCIA NIX -->
+  <div class="slide slide--nix" data-slide="12">
+    <span class="slide__tag">M&oacute;dulo 03</span>
+    <img src="agencianix.svg" alt="Ag&ecirc;ncia Nix" style="height: clamp(70px, 9vh, 110px); width: auto;">
+    <h1 class="slide__title" style="font-size: clamp(36px, 4.5vw, 72px);">Intelig&ecirc;ncia Criativa<br>e Conex&atilde;o Digital</h1>
+    <p class="slide__text">N&atilde;o criamos apenas posts &mdash; criamos narrativas que vendem.</p>
+    <div class="deco-line"></div>
+    <div class="prod__stats">
+      <div class="prod__stat"><strong>10</strong><span>Clientes Fixos</span></div>
+      <div class="prod__stat"><strong>+30</strong><span>Contas Ativas</span></div>
+    </div>
+    <div class="nix__grid">
+      <div class="nix__card"><h4>Social Media</h4><p>Conte&uacute;do estrat&eacute;gico para redes sociais</p></div>
+      <div class="nix__card"><h4>Real Time</h4><p>Cobertura e produ&ccedil;&atilde;o em tempo real</p></div>
+      <div class="nix__card"><h4>Material Gr&aacute;fico</h4><p>Design e identidade visual de alto n&iacute;vel</p></div>
+    </div>
+    <span class="nix__brands-label">Marcas que confiam na Nix</span>
+    <div style="width: 100%; overflow: hidden; mask-image: linear-gradient(90deg, transparent 0%, black 10%, black 90%, transparent 100%);">
+      <div class="nix__brands">
+        <img src="cia.svg" alt="CIA" class="nix__brand">
+        <img src="armazem.svg" alt="Armaz&eacute;m da Cerveja" class="nix__brand">
+        <img src="corote.svg" alt="Corot&eacute;" class="nix__brand">
+        <img src="circuito.svg" alt="Circuito Sertanejo" class="nix__brand">
+        <img src="brahma.svg" alt="Brahma" class="nix__brand">
+        <img src="cdl.svg" alt="CDL" class="nix__brand">
+        <img src="redbull.svg" alt="Red Bull" class="nix__brand">
+        <!-- duplicate for infinite scroll -->
+        <img src="cia.svg" alt="CIA" class="nix__brand">
+        <img src="armazem.svg" alt="Armaz&eacute;m da Cerveja" class="nix__brand">
+        <img src="corote.svg" alt="Corot&eacute;" class="nix__brand">
+        <img src="circuito.svg" alt="Circuito Sertanejo" class="nix__brand">
+        <img src="brahma.svg" alt="Brahma" class="nix__brand">
+        <img src="cdl.svg" alt="CDL" class="nix__brand">
+        <img src="redbull.svg" alt="Red Bull" class="nix__brand">
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 13: STAGE DIVE -->
+  <div class="slide slide--stage" data-slide="13">
+    <div class="stage__left">
+      <span class="slide__tag">M&oacute;dulo 04</span>
+      <img src="stagedive.svg" alt="Stage Dive" style="height: clamp(70px, 9vh, 110px); width: auto;">
+      <h1 class="slide__title">A Trilha Sonora<br>dos Grandes<br>Momentos</h1>
+      <div class="deco-line"></div>
+      <p class="slide__text">Curadoria musical, negocia&ccedil;&atilde;o e log&iacute;stica completa de atra&ccedil;&otilde;es. Entendemos o perfil do evento e entregamos o &ldquo;card&aacute;pio musical&rdquo; ideal.</p>
+    </div>
+    <div class="stage__right">
+      <div class="stage__number">667</div>
+      <p class="slide__text">Shows negociados para 2025.<br>Presen&ccedil;a em <strong>10 estados</strong> e expans&atilde;o internacional (Paraguai).</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 14: EXP FORMATURAS -->
+  <div class="slide slide--form" data-slide="14">
+    <span class="slide__tag">M&oacute;dulo 05</span>
+    <img src="expformaturas.svg" alt="EXP Formaturas" style="height: clamp(70px, 9vh, 110px); width: auto;">
+    <h1 class="slide__title">Onde grandes ciclos<br>se tornam mem&oacute;rias<br>eternas.</h1>
+    <p class="slide__text">Uma jornada de celebra&ccedil;&atilde;o, n&atilde;o apenas uma festa. Do Bailes de Gala e Cola&ccedil;&otilde;es at&eacute; pr&eacute;-eventos e aulas da saudade.</p>
+    <div class="deco-line"></div>
+    <div class="prod__stats">
+      <div class="prod__stat"><strong>+20</strong><span>Projetos em 2025</span></div>
+    </div>
+    <div class="form__items">
+      <div class="form__item"><h4>Bailes de Gala</h4><p>Celebra&ccedil;&otilde;es inesquec&iacute;veis de alto padr&atilde;o</p></div>
+      <div class="form__item"><h4>Cola&ccedil;&otilde;es</h4><p>Cerim&ocirc;nias oficiais com excel&ecirc;ncia</p></div>
+      <div class="form__item"><h4>Aulas da Saudade</h4><p>Momentos de emo&ccedil;&atilde;o e nostalgia</p></div>
+      <div class="form__item"><h4>Pr&eacute;-eventos</h4><p>Esquentas, jantares e festas tem&aacute;ticas</p></div>
+    </div>
+  </div>
+
+  <!-- SLIDE 15: POR QUE ESCOLHER -->
+  <div class="slide slide--esg" data-slide="15">
+    <span class="slide__tag">Por que escolher o Grupo EXP?</span>
+    <h1 class="slide__title" style="margin-bottom:12px;">Uma &uacute;nica interface,<br>infinitas solu&ccedil;&otilde;es.</h1>
+    <div class="why__layout">
+      <div class="why__left">
+        <div class="why__grid" style="grid-template-columns: 1fr;">
+          <div class="why__card"><h4>Solu&ccedil;&atilde;o 360&deg;</h4><p>Produ&ccedil;&atilde;o, marketing, entretenimento e formaturas em um s&oacute; ecossistema</p></div>
+          <div class="why__card"><h4>Execu&ccedil;&atilde;o de Elite</h4><p>Experi&ecirc;ncia comprovada em grandes eventos com milhares de pessoas</p></div>
+          <div class="why__card"><h4>Impacto Real</h4><p>Refer&ecirc;ncia nacional em ESG e responsabilidade social</p></div>
+        </div>
+      </div>
+      <div class="why__right">
+        <svg class="brazil-map" viewBox="0 0 220 240" xmlns="http://www.w3.org/2000/svg">
+          <!-- Simplified Brazil states -->
+          <g id="AM"><path class="state" d="M20,50 L55,35 L85,38 L90,55 L85,75 L55,80 L30,75 Z"/></g>
+          <g id="PA" class=""><path class="state active" d="M85,38 L120,30 L140,40 L145,65 L130,80 L105,82 L85,75 L90,55 Z"/><text class="state-label" x="115" y="60">PA</text></g>
+          <g id="MA"><path class="state" d="M140,40 L160,38 L165,55 L155,70 L145,65 Z"/></g>
+          <g id="PI"><path class="state" d="M155,70 L165,55 L175,60 L172,80 L160,82 Z"/></g>
+          <g id="CE"><path class="state" d="M175,45 L190,42 L188,58 L175,60 Z"/></g>
+          <g id="RN"><path class="state" d="M190,42 L200,44 L198,54 L188,52 Z"/></g>
+          <g id="PB"><path class="state" d="M188,55 L200,54 L200,62 L188,62 Z"/></g>
+          <g id="PE"><path class="state" d="M182,62 L200,62 L200,70 L180,72 Z"/></g>
+          <g id="AL"><path class="state" d="M192,70 L200,70 L200,78 L190,76 Z"/></g>
+          <g id="SE"><path class="state" d="M188,78 L196,76 L196,83 L188,82 Z"/></g>
+          <g id="BA"><path class="state active" d="M145,78 L172,80 L182,72 L190,76 L188,82 L185,100 L170,115 L145,118 L130,105 L130,80 Z"/><text class="state-label" x="160" y="98">BA</text></g>
+          <g id="TO"><path class="state" d="M130,80 L145,78 L145,105 L130,105 Z"/></g>
+          <g id="MT"><path class="state active" d="M55,80 L85,75 L105,82 L110,105 L100,125 L75,130 L55,115 L50,95 Z"/><text class="state-label" x="80" y="105">MT</text></g>
+          <g id="GO"><path class="state active" d="M100,125 L110,105 L130,105 L140,118 L135,140 L118,148 L105,140 Z"/><text class="state-label" x="118" y="130">GO</text></g>
+          <g id="DF"><path class="state active" d="M124,132 L132,130 L132,138 L124,138 Z"/><text class="state-label" x="128" y="148">DF</text></g>
+          <g id="MS"><path class="state" d="M55,115 L75,130 L85,148 L78,168 L60,170 L48,155 L48,130 Z"/></g>
+          <g id="MG"><path class="state active" d="M118,148 L135,140 L145,118 L170,115 L178,130 L175,155 L155,168 L135,170 L120,162 Z"/><text class="state-label" x="148" y="148">MG</text></g>
+          <g id="ES"><path class="state" d="M178,130 L190,128 L188,148 L175,155 Z"/></g>
+          <g id="RJ"><path class="state active" d="M155,168 L175,155 L188,158 L185,172 L168,178 L155,175 Z"/><text class="state-label" x="172" y="170">RJ</text></g>
+          <g id="SP"><path class="state active" d="M85,148 L105,140 L120,162 L135,170 L130,185 L108,190 L90,180 L78,168 Z"/><text class="state-label" x="108" y="172">SP</text></g>
+          <g id="PR"><path class="state" d="M78,168 L90,180 L95,198 L75,200 L60,190 L60,170 Z"/></g>
+          <g id="SC"><path class="state" d="M75,200 L95,198 L95,212 L78,214 Z"/></g>
+          <g id="RS"><path class="state" d="M68,214 L78,214 L95,212 L92,232 L72,238 L60,228 Z"/></g>
+          <g id="RO"><path class="state" d="M30,75 L55,80 L50,95 L40,100 L25,95 Z"/></g>
+          <g id="AC"><path class="state" d="M8,80 L25,75 L25,95 L10,92 Z"/></g>
+          <g id="RR"><path class="state" d="M45,15 L65,12 L68,35 L50,38 Z"/></g>
+          <g id="AP"><path class="state" d="M120,10 L140,8 L142,28 L125,30 Z"/></g>
+        </svg>
+        <div class="map__legend"><div class="map__legend-dot"></div> Atua&ccedil;&atilde;o Grupo EXP</div>
+        <div class="map__states-list">
+          <span class="map__state-tag">MG</span><span class="map__state-tag">SP</span><span class="map__state-tag">RJ</span><span class="map__state-tag">GO</span>
+          <span class="map__state-tag">BA</span><span class="map__state-tag">DF</span><span class="map__state-tag">MT</span><span class="map__state-tag">PA</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 16: FECHAMENTO -->
+  <div class="slide slide--end" data-slide="16">
+    <img src="logo.svg" alt="Grupo EXP" class="capa__logo" style="width: clamp(270px, 30vw, 450px); margin-bottom: 12px; filter: brightness(0) invert(1);">
+    <div class="capa__line"></div>
+    <p class="end__cta">Vamos construir sua<br>pr&oacute;xima grande<br>experi&ecirc;ncia?</p>
+    <div class="end__contact">
+      <a href="#">@grupoexp</a>
+      <a href="#">contato@grupoexp.com.br</a>
+    </div>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <img src="logo.svg" alt="Grupo EXP" class="topbar__logo">
+  <span class="topbar__module" id="moduleLabel">CAPA</span>
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottombar">
+  <span class="bottombar__counter" id="counter">01 / 13</span>
+  <div class="bottombar__progress"><div class="bottombar__fill" id="progressFill" style="width: 7.7%"></div></div>
+</div>
+
+<!-- SIDE NAV -->
+<nav class="nav" id="nav"></nav>
+
+<!-- SCROLL HINT -->
+<div class="scroll-hint" id="scrollHint">
+  <span>Scroll ou passe o mouse</span>
+  <div class="scroll-hint__arrow"></div>
+</div>
+
+<script>
+(function() {
+  const SLIDES = [
+    { label: 'Capa', module: 'CAPA' },
+    { label: 'Quem Somos', module: 'M\u00d3DULO 01' },
+    { label: 'Ecossistema', module: 'ECOSSISTEMA' },
+    { label: 'EXP Produ\u00e7\u00f5es', module: 'M\u00d3DULO 02' },
+    { label: 'Portf\u00f3lio', module: 'PORTF\u00d3LIO' },
+    { label: 'Servi\u00e7os', module: 'SERVI\u00c7OS' },
+    { label: 'Case CIA', module: 'CASE CIA' },
+    { label: 'CIA Festivo', module: 'CIA FESTIVO' },
+    { label: 'CIA Esportivo', module: 'CIA ESPORTIVO' },
+    { label: 'ESG', module: 'ESG' },
+    { label: 'Uai Summit', module: 'CASE UAI SUMMIT' },
+    { label: 'Caldas Country', module: 'CASE CALDAS' },
+    { label: 'Ag\u00eancia Nix', module: 'M\u00d3DULO 03' },
+    { label: 'Stage Dive', module: 'M\u00d3DULO 04' },
+    { label: 'Formaturas', module: 'M\u00d3DULO 05' },
+    { label: 'Por que n\u00f3s', module: 'FECHAMENTO' },
+    { label: 'Contato', module: 'CONTATO' }
+  ];
+
+  let current = 0;
+  let transitioning = false;
+  const slides = document.querySelectorAll('.slide');
+  const nav = document.getElementById('nav');
+  const moduleLabel = document.getElementById('moduleLabel');
+  const counter = document.getElementById('counter');
+  const progressFill = document.getElementById('progressFill');
+  const scrollHint = document.getElementById('scrollHint');
+
+  // Build navigation
+  SLIDES.forEach((s, i) => {
+    const item = document.createElement('div');
+    item.className = 'nav__item' + (i === 0 ? ' active' : '');
+    item.innerHTML = `<div class="nav__dot"></div><span class="nav__label">${s.label}</span>`;
+    item.addEventListener('mouseenter', () => goTo(i));
+    item.addEventListener('click', () => goTo(i));
+    nav.appendChild(item);
+  });
+
+  function goTo(index) {
+    if (index === current || transitioning || index < 0 || index >= SLIDES.length) return;
+    transitioning = true;
+    const orbs = document.querySelectorAll('.hero__orb');
+    const angle = (index / SLIDES.length) * 360;
+    orbs.forEach((orb, i) => { orb.style.transform = `rotate(${angle + i*120}deg) translateX(${30+i*10}px)`; });
+    document.querySelector('.hero__bg').style.filter = `hue-rotate(${index * 6}deg)`;
+    slides[current].classList.remove('active');
+    current = index;
+    slides[current].classList.add('active');
+    document.querySelectorAll('.nav__item').forEach((item, i) => { item.classList.toggle('active', i === current); });
+    moduleLabel.textContent = SLIDES[current].module;
+    counter.textContent = `${String(current+1).padStart(2,'0')} / ${String(SLIDES.length).padStart(2,'0')}`;
+    progressFill.style.width = ((current+1) / SLIDES.length * 100) + '%';
+    scrollHint.style.display = 'none';
+    setTimeout(() => { transitioning = false; }, 600);
+  }
+
+  // Wheel
+  let wheelTimeout;
+  document.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    clearTimeout(wheelTimeout);
+    wheelTimeout = setTimeout(() => { e.deltaY > 0 ? goTo(current+1) : goTo(current-1); }, 50);
+  }, { passive: false });
+
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if (['ArrowDown','ArrowRight',' '].includes(e.key)) { e.preventDefault(); goTo(current+1); }
+    if (['ArrowUp','ArrowLeft'].includes(e.key)) { e.preventDefault(); goTo(current-1); }
+  });
+
+  // Touch
+  let touchStart = 0;
+  document.addEventListener('touchstart', (e) => { touchStart = e.touches[0].clientY; });
+  document.addEventListener('touchend', (e) => {
+    const diff = touchStart - e.changedTouches[0].clientY;
+    if (Math.abs(diff) > 50) diff > 0 ? goTo(current+1) : goTo(current-1);
+  });
+
+  // Particles
+  const pc = document.getElementById('particles');
+  for (let i = 0; i < 40; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random()*100+'%';
+    p.style.animationDuration = (8+Math.random()*16)+'s';
+    p.style.animationDelay = (Math.random()*12)+'s';
+    p.style.width = p.style.height = (1+Math.random()*2)+'px';
+    pc.appendChild(p);
+  }
+
+  // ─── SOLAR SYSTEM (ecossistema) ───
+  (function() {
+    const solar = document.getElementById('solarSystem');
+    if (!solar) return;
+    const planets = solar.querySelectorAll('.solar__planet');
+    const orbits = { '1': 240, '2': 525 }; // radius in px (half of orbit width)
+    let startTime = performance.now();
+    let paused = {};
+
+    const infoBox = document.getElementById('solarInfo');
+    const infoOverlay = document.getElementById('solarOverlay');
+    const infoLogo = infoBox.querySelector('.solar__info-logo');
+    const infoTitle = infoBox.querySelector('.solar__info-title');
+    const infoText = infoBox.querySelector('.solar__info-text');
+    const infoClose = infoBox.querySelector('.solar__info-close');
+
+    function openInfo(planet) {
+      const img = planet.querySelector('img');
+      const label = planet.querySelector('.solar__planet-label');
+      infoLogo.src = img.src;
+      infoLogo.alt = img.alt;
+      infoTitle.textContent = label.textContent;
+      infoText.textContent = planet.dataset.info;
+      infoBox.classList.add('active');
+      infoOverlay.classList.add('active');
+    }
+    function closeInfo() {
+      infoBox.classList.remove('active');
+      infoOverlay.classList.remove('active');
+    }
+
+    planets.forEach(p => {
+      p.addEventListener('mouseenter', () => { paused[p.dataset.angle] = true; });
+      p.addEventListener('mouseleave', () => { paused[p.dataset.angle] = false; });
+      p.addEventListener('click', () => openInfo(p));
+    });
+
+    infoClose.addEventListener('click', (e) => { e.stopPropagation(); closeInfo(); });
+    infoOverlay.addEventListener('click', closeInfo);
+
+    function animate(now) {
+      const elapsed = (now - startTime) / 1000;
+      planets.forEach(planet => {
+        const orbit = planet.dataset.orbit;
+        const baseAngle = parseFloat(planet.dataset.angle);
+        const speed = parseFloat(planet.dataset.speed);
+        if (paused[planet.dataset.angle]) {
+          // nudge startTime to freeze this planet
+        }
+        const angle = baseAngle + (elapsed * (360 / speed));
+        const rad = angle * Math.PI / 180;
+        const r = orbits[orbit];
+        const x = Math.cos(rad) * r;
+        const y = Math.sin(rad) * r;
+        const solarRect = solar.getBoundingClientRect();
+        const cx = solarRect.width / 2;
+        const cy = solarRect.height / 2;
+        planet.style.left = (cx + x - planet.offsetWidth / 2) + 'px';
+        planet.style.top = (cy + y - planet.offsetHeight / 2) + 'px';
+      });
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+  })();
+
+  // ─── SERVICE TABS (hover to switch) ───
+  const tabs = document.querySelectorAll('.svc__tab');
+  const panels = document.querySelectorAll('.svc__panel');
+  function switchPanel(idx) {
+    tabs.forEach((t,i) => t.classList.toggle('active', i === idx));
+    panels.forEach((p,i) => p.classList.toggle('active', i === idx));
+  }
+  tabs.forEach((tab, i) => {
+    tab.addEventListener('mouseenter', () => switchPanel(i));
+    tab.addEventListener('click', () => switchPanel(i));
+  });
+
+  // ─── CINEMA PANELS (services — auto-rotate + click dots) ───
+  document.querySelectorAll('.svc__cinema').forEach(cinema => {
+    const frames = cinema.querySelectorAll('.svc__frame');
+    const dots = cinema.querySelectorAll('.svc__cinema-dot');
+    const label = cinema.querySelector('.svc__cinema-label');
+    let cur = 0;
+    function show(n) {
+      cur = n;
+      frames.forEach((f,i) => f.classList.toggle('active', i === cur));
+      dots.forEach((d,i) => d.classList.toggle('active', i === cur));
+      if (label) label.textContent = `${String(cur+1).padStart(2,'0')} / ${String(frames.length).padStart(2,'0')}`;
+    }
+    dots.forEach(d => d.addEventListener('click', () => show(+d.dataset.i)));
+    setInterval(() => show((cur + 1) % frames.length), 4000);
+  });
+
+  // ─── CIA FESTIVO — MARQUEE GENERATOR ───
+  (function() {
+    const wrap = document.querySelector('.fest__marquee-wrap');
+    if (!wrap) return;
+    const festImages = [
+      { src: 'images/festivo/01.jpg', caption: 'Palco Principal' },
+      { src: 'images/festivo/02.jpg', caption: 'Festa' },
+      { src: 'images/festivo/03.jpg', caption: 'Arena' },
+      { src: 'images/festivo/04.jpg', caption: 'Artista' },
+      { src: 'images/festivo/05.jpg', caption: 'P\u00fablico' },
+      { src: 'images/festivo/06.jpg', caption: 'Backstage' },
+    ];
+    const marquee = document.createElement('div');
+    marquee.className = 'fest__marquee';
+
+    [false, true].forEach(reverse => {
+      const row = document.createElement('div');
+      row.className = 'fest__row' + (reverse ? ' fest__row--reverse' : '');
+      // Duplicate for infinite loop
+      const items = [...festImages, ...festImages];
+      items.forEach(img => {
+        const tile = document.createElement('div');
+        tile.className = 'fest__tile photo';
+        tile.style.backgroundImage = `url('${img.src}')`;
+        tile.innerHTML = `<span class="photo__caption">${img.caption}</span>`;
+        row.appendChild(tile);
+      });
+      marquee.appendChild(row);
+    });
+
+    wrap.replaceWith(marquee);
+  })();
+
+  // ─── CIA ESPORTIVO — PARALLAX DIORAMA ───
+  (function() {
+    const diorama = document.getElementById('espDiorama');
+    if (!diorama) return;
+    const container = diorama.closest('.esp__right');
+    container.addEventListener('mousemove', (e) => {
+      const rect = container.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5; // -0.5 to 0.5
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      diorama.style.transform = `rotateY(${x * 12}deg) rotateX(${-y * 8}deg)`;
+    });
+    container.addEventListener('mouseleave', () => {
+      diorama.style.transform = 'rotateY(0) rotateX(0)';
+      diorama.style.transition = 'transform 0.6s ease-out';
+      setTimeout(() => { diorama.style.transition = 'transform 0.15s ease-out'; }, 600);
+    });
+  })();
+
+  // ─── UAI SUMMIT — KEN BURNS HERO CYCLE ───
+  (function() {
+    const stage = document.getElementById('showcaseStage');
+    if (!stage) return;
+    const frames = stage.querySelectorAll('.showcase__frame');
+    const thumbs = stage.querySelectorAll('.showcase__thumb');
+    let cur = 0;
+    function showFrame(n) {
+      cur = n;
+      frames.forEach((f,i) => f.classList.toggle('active', i === cur));
+      thumbs.forEach((t,i) => t.classList.toggle('active', i === cur));
+    }
+    thumbs.forEach(t => t.addEventListener('click', () => showFrame(+t.dataset.i)));
+    setInterval(() => showFrame((cur + 1) % frames.length), 5000);
+  })();
+
+})();
+</script>
+</body>
+</html>
